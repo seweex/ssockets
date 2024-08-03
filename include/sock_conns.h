@@ -67,6 +67,9 @@ unsigned short	_Connection_base::NUM_OF_SOCKETS = 0;
 template<typename _ConnTag, typename _ProtTag>
 class Connection : public _Connection_base
 {
+	static_assert(is_tag_v<_ConnTag>, "bad '_ConnTag'");
+	static_assert(is_tag_v<_ProtTag>, "bad '_ProtTag'");
+
 	using _Conn_traits = _Connection_traits<_ConnTag, _ProtTag>;
 
 public:
@@ -97,46 +100,12 @@ public:
 		ReleaseBuffer();
 	}
 
-	_STD string Receive() {
-		_STD string result;
-		_STD string buff;
-
-		do 
-			result += buff = Receive(DEFAULT_BUFFER_SIZE);
-		while (!buff.empty());
-
-		return result;
-	}
-
-	_STD string Receive(size_t _CharsNum) {
-		if (_CharsNum > DEFAULT_BUFFER_SIZE) {
-			_STD memset(_BufferPtr, 0, DEFAULT_BUFFER_SIZE);
-			int bytesTaked = recv(_Socket, _BufferPtr, DEFAULT_BUFFER_SIZE, 0);
-
-			if (bytesTaked == SOCKET_ERROR)
-				_STD _Xruntime_error(RECEIVE_SOCKET_ERROR);
-
-			return _STD string(_BufferPtr, bytesTaked) + Receive(_CharsNum - DEFAULT_BUFFER_SIZE);
-		}
-		else {
-			_STD memset(_BufferPtr, 0, _CharsNum);
-			int bytesTaked = recv(_Socket, _BufferPtr, _CharsNum, 0);
-
-			if (bytesTaked == SOCKET_ERROR)
-				_STD _Xruntime_error(RECEIVE_SOCKET_ERROR);
-
-			return _STD string(_BufferPtr, bytesTaked);
-		}
-	}
-
-	void Send(const _STD string& _Msg) {
-		int bytesSended = send(_Socket, _Msg.c_str(),
-			min(_Msg.size() + 1, DEFAULT_BUFFER_SIZE), 0);
-
-		if (bytesSended == SOCKET_ERROR)
-			_STD _Xruntime_error(SEND_SOCKET_ERROR);
-	}
+	template<typename _CharTy> _STD basic_string<_CharTy> Receive();
+	template<typename _CharTy> _STD basic_string<_CharTy> Receive(size_t _CharsNum);
+	template<typename _CharTy> void Send(const _STD basic_string<_CharTy>& _Msg);
 };
+
+#include "sock_conns_commun.inl"
 
 using ClientTCP = Connection<ClientTag, TCPTag>;
 using ServerTCP = Connection<ServerTag, TCPTag>;

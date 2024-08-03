@@ -15,4 +15,16 @@
 #define _SEWEEX_END		}
 #define _SEWEEX			seweex::
 
+_SEWEEX_BEGIN
+
+#if defined(_SSOCK_USE_WSAPI_VER_MJ) and defined(_SSOCK_USE_WSAPI_VER_MN)
+	constexpr WORD _WinSockVer = MAKEWORD(_SSOCK_USE_WSAPI_VER_MJ, _SSOCK_USE_WSAPI_VER_MN);
+#elif defined(_SSOCK_USE_WSAPI_VER_MJ) != defined(_SSOCK_USE_WSAPI_VER_MN)
+	#error "incorrect definition of the wsapi version "
+#else
+	constexpr WORD _WinSockVer = MAKEWORD(2, 2);
+#endif
+
+_SEWEEX_END
+
 #endif
